@@ -2,8 +2,8 @@ import torch.nn as nn
 import torch
 
 from net.modules.pro_gan.pixelwise_norm import PixelwiseNormalization
-from net.modules.pro_gan.upsample import Upsample
 from net.modules.pro_gan.weighted_modules import WeightedConv2d
+from net.modules.pro_gan.upsample import Upsample
 
 
 class GeneratorBlock(nn.Module):

@@ -4,7 +4,8 @@ import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 
-from ..net.modules.pro_gan.generator_blocks import GeneratorConvBlock, GeneratorInitialBlock, GeneratorFinalBlock
+from ..net.modules.pro_gan.generator_blocks import GeneratorConvBlock, GeneratorInitialBlock, GeneratorFinalBlock, GeneratorMiddleBlock
+
 
 class TestGeneratorBlocks:
 
@@ -19,6 +20,12 @@ class TestGeneratorBlocks:
         x = torch.randn(1, 128, 1, 1)
         y = block(x)
         assert y.shape == (1, 64, 4, 4)
+
+    def test_generator_middle_block(self):
+        block = GeneratorMiddleBlock(in_channels=64, out_channels=128)
+        x = torch.randn(1, 64, 64, 64)
+        y = block(x)
+        assert y.shape == (1, 128, 128, 128)
 
     def test_generator_final_block(self):
         block = GeneratorFinalBlock(in_channels=64, out_channels=3)

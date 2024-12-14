@@ -1,0 +1,7 @@
+[tool.coverage.run]
+omit = [
+    "main.py"
+    ]
+
+[tool.coverage.html]
+directory = "coverage_html_report"

@@ -5,8 +5,10 @@ import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 
-from net.modules.pro_gan.minibatch_stddev import MiniBatchStdDev
+from net.modules.pro_gan.weighted_modules import WeightedConv2d, WeightedLinear
 from net.modules.pro_gan.pixelwise_norm import PixelwiseNormalization
+from net.modules.pro_gan.minibatch_stddev import MiniBatchStdDev
+from net.modules.pro_gan.upsample import Upsample
 
 
 class TestModulesProGAN:
@@ -53,3 +55,44 @@ class TestModulesProGAN:
         assert output.size() == (32, 64, 4, 4)
         assert output.device == torch.device('cuda:0')
         assert math.isclose(torch.sum(output).item(), expected_sum, rel_tol=1e-4)
+
+    def test_Upsample(self):
+        upsample = Upsample().cuda()
+
+        random_tensor = torch.zeros(32, 64, 4, 4).cuda()
+        output = upsample(random_tensor)
+
+        assert output.size() == (32, 64, 8, 8)
+        assert output.device == torch.device('cuda:0')
+        assert math.isclose(torch.sum(output).item(), 0.0, rel_tol=1e-4)
+
+    def test_WeightedConv2d(self):
+        weighted_conv = WeightedConv2d(3, 64, 3, 1, 1).cuda()
+
+        random_tensor = torch.zeros(32, 3, 4, 4).cuda()
+        output = weighted_conv(random_tensor)
+
+        assert output.size() == (32, 64, 4, 4)
+        assert output.device == torch.device('cuda:0')
+        assert math.isclose(torch.sum(output).item(), 0.0, rel_tol=1e-4)
+
+    def test_WeightedLinear(self):
+        weighted_linear = WeightedLinear(512, 256).cuda()
+
+        random_tensor = torch.zeros(32, 512).cuda()
+        output = weighted_linear(random_tensor)
+
+        assert output.size() == (32, 256)
+        assert output.device == torch.device('cuda:0')
+        assert math.isclose(torch.sum(output).item(), 0.0, rel_tol=1e-4)
+
+    def test_WeightedLinear_no_bias(self):
+        weighted_linear = WeightedLinear(512, 256).cuda()
+        weighted_linear.linear.bias = None # type: ignore
+
+        random_tensor = torch.zeros(32, 512).cuda()
+        output = weighted_linear(random_tensor)
+
+        assert output.size() == (32, 256)
+        assert output.device == torch.device('cuda:0')
+        assert math.isclose(torch.sum(output).item(), 0.0, rel_tol=1e-4)
