@@ -31,10 +31,21 @@ class DiscriminatorConvBlock(DiscriminatorBlock):
 class DiscriminatorInitialBlock(DiscriminatorBlock):
     # Initial block of the discriminator
 
-    def __init__(self, out_channels: int, input_dim: int):
+    def __init__(self, input_dim: int, out_channels: int):
         super().__init__()
 
         self.block.add_module('conv_block', DiscriminatorConvBlock(input_dim, out_channels, 1, 1, 0))
+
+
+class DiscriminatorMiddleBlock(DiscriminatorBlock):
+    # Middle block of the discriminator
+
+    def __init__(self, in_channels: int, out_channels: int):
+        super().__init__()
+
+        self.block.add_module('conv_block_1', DiscriminatorConvBlock(in_channels, out_channels, 3, 1, 1))
+        self.block.add_module('conv_block_2', DiscriminatorConvBlock(out_channels, out_channels, 3, 1, 1))
+        self.block.add_module('avg_pool', nn.AvgPool2d(2))
 
 
 class DiscriminatorFinalBlock(nn.Module):

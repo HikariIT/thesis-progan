@@ -15,6 +15,7 @@ class MiniBatchStdDev(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         size = x.size()
         sub_group_size = min(size[0], self.group_size)
+
         if size[0] % sub_group_size != 0:
             sub_group_size = size[0]
 
@@ -32,6 +33,6 @@ class MiniBatchStdDev(nn.Module):
             y = y.expand(no_groups, sub_group_size, -1, -1, -1)
             y = y.contiguous().view(-1, 1, height, width)
         else:
-            y = torch.zeros_like(x, device=x.device)
+            y = torch.zeros(size[0], 1, height, width, device=x.device)
 
         return torch.cat([x, y], 1)

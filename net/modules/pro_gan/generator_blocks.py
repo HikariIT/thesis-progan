@@ -2,6 +2,7 @@ import torch.nn as nn
 import torch
 
 from net.modules.pro_gan.pixelwise_norm import PixelwiseNormalization
+from net.modules.pro_gan.upsample import Upsample
 from net.modules.pro_gan.weighted_modules import WeightedConv2d
 
 
@@ -41,6 +42,17 @@ class GeneratorInitialBlock(GeneratorBlock):
         self.block.add_module('conv_block', GeneratorConvBlock(fmap_size, fmap_size, 3, 1, 1))
 
 
+class GeneratorMiddleBlock(GeneratorBlock):
+    # Middle block of the generator
+
+    def __init__(self, in_channels: int, out_channels: int):
+        super().__init__()
+
+        self.block.add_module('upsample', Upsample())
+        self.block.add_module('conv_block_1', GeneratorConvBlock(in_channels, out_channels, 3, 1, 1))
+        self.block.add_module('conv_block_2', GeneratorConvBlock(out_channels, out_channels, 3, 1, 1))
+
+
 class GeneratorFinalBlock(GeneratorBlock):
     # Final block of the generator
 
@@ -48,4 +60,3 @@ class GeneratorFinalBlock(GeneratorBlock):
         super().__init__()
 
         self.block.add_module('weighted_conv_2d', WeightedConv2d(in_channels, out_channels, 1, 1, 0))
-
