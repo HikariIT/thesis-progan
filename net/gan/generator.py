@@ -66,4 +66,4 @@ class Generator(nn.Module):
         return next(self.parameters()).device
 
     def generate_latent_points(self, num_points: int) -> torch.Tensor:
-        return torch.randn(num_points, self.latent_dim, device=self.device())
+        return torch.randn(num_points, self.latent_dim, 1, 1, device=self.device())
