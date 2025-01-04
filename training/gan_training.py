@@ -70,8 +70,10 @@ class GANTraining:
                 self.iterator = iter(self.data_loader)
                 real_batch, _ = next(self.iterator)
 
+            factor = 2 ** (self.generator.depth - self.generator.current_depth)
+
             real_batch = real_batch.to(self.generator.device())
-            real_batch = nn.functional.interpolate(real_batch, size=(4 * 2 ** self.generator.current_depth, 4 * 2 ** self.generator.current_depth)) # NOTE: This is a temporary fix
+            real_batch = nn.functional.avg_pool2d(real_batch, factor)
 
             latent_points = self.generator.generate_latent_points(real_batch.shape[0])
             fake_batch = self.generator(latent_points, alpha)

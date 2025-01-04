@@ -3,12 +3,10 @@ import torch.nn as nn
 
 
 class MiniBatchStdDev(nn.Module):
-    # Minibatch standard deviation layer for the discriminator, perfomed on the last feature map. Described at https://arxiv.org/pdf/1710.10196v3, p. 3
 
     group_size: int
 
     def __init__(self, mini_batch_size: int = 4):
-        # Constructor - mini_batch_size is the size of the mini-batches to split the batch into
         super().__init__()
         self.group_size = mini_batch_size
 
@@ -25,8 +23,7 @@ class MiniBatchStdDev(nn.Module):
 
         if sub_group_size > 1:
             y = x.view(-1, sub_group_size, filters, height, width)
-            y = torch.var(y, 1)
-            y = torch.sqrt(y + eps)
+            y = torch.sqrt(torch.var(y, 1)+ eps)
             y = y.view(no_groups, -1)
             y = torch.mean(y, 1).view(no_groups, 1)
             y = y.expand(no_groups, width * height).view(no_groups, 1, 1, width, height)

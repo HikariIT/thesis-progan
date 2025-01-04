@@ -8,8 +8,8 @@ class GANTrainingConfig:
 
     log_dir: str = "runs/"
 
-    steps_for_depth: list[int] = field(default_factory=lambda: [20000, 20000, 20000, 20000, 20000, 40000])
-    transition_steps_for_depth: list[int] = field(default_factory=lambda: [20000, 20000, 20000, 20000, 40000])
+    steps_for_depth: list[int] = field(default_factory=lambda: [40000, 40000, 40000, 80000, 80000, 80000])
+    transition_steps_for_depth: list[int] = field(default_factory=lambda: [40000, 40000, 80000, 80000, 80000])
     batch_sizes_for_depth: list[int] = field(default_factory=lambda: [16, 16, 16, 16, 16, 8])
 
     num_workers: int = 0

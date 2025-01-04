@@ -14,7 +14,6 @@ class WeightedConv2d(nn.Module):
         super().__init__()
         self.conv = nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding)
 
-        # This part is related to equalized learning rate. It scale the weights of a layer based on how many weights it has.
         bias = self.conv.bias
         self.conv.bias = None
 
@@ -23,7 +22,7 @@ class WeightedConv2d(nn.Module):
             raise ValueError('Bias is None in WeightedConv2d. This is unexpected. Please check the code (weighted_modules.py)')
 
         scale_factor = np.prod(list(self.conv.weight.shape)[1:])
-        self.scale = gain * np.sqrt(2 / (scale_factor)) # self.scale = gain/np.sqrt(scale_factor), with gain = np.sqrt(2), pending for testing...
+        self.scale = gain * np.sqrt(2 / (scale_factor))
         self.bias = nn.Parameter(bias.view(1, bias.shape[0], 1, 1))
 
         nn.init.normal_(self.conv.weight)

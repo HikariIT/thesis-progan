@@ -41,6 +41,7 @@ if __name__ =="__main__":
     discriminator_loss = DiscriminatorLoss(wgan_gp_loss)
     generator_loss = GeneratorLoss(wgan_gp_loss)
 
-    training_config = GANTrainingConfig(save_interval=1000, img_generation_interval=500, checkpoint_images=16, num_workers=4)
+    training_config = GANTrainingConfig(save_interval=1000, img_generation_interval=1000, checkpoint_images=32, num_workers=4)
     trainer = GANTraining(generator, discriminator, generator_loss, discriminator_loss, train_dataset, training_config)
+    trainer.load_model('saved_models/1734979579_depth_4_iteration_201000.pth')
     trainer.train()

@@ -21,24 +21,25 @@ class VAE(nn.Module):
         self.init_layers()
 
     def init_layers(self):
-        self.encoder.append(VAEEncoderBlock(self.image_channels, 32, 4, 2, 1))
+        self.encoder.append(VAEEncoderBlock(self.image_channels, 16, 4, 2, 1))
+        self.encoder.append(VAEEncoderBlock(16, 32, 4, 2, 1))
         self.encoder.append(VAEEncoderBlock(32, 64, 4, 2, 1))
         self.encoder.append(VAEEncoderBlock(64, 128, 4, 2, 1))
         self.encoder.append(VAEEncoderBlock(128, 256, 4, 2, 1))
-        self.encoder.append(VAEEncoderBlock(256, 512, 4, 2, 1))
         self.encoder.append(nn.Flatten())
 
-        self.mean_layer = nn.Linear(512 * 4 * 4, self.latent_dim)
-        self.logvar_layer = nn.Linear(512 * 4 * 4, self.latent_dim)
+        self.mean_layer = nn.Linear(256 * 4 * 4, self.latent_dim)
+        self.logvar_layer = nn.Linear(256 * 4 * 4, self.latent_dim)
 
-        self.decoder.append(nn.Linear(self.latent_dim, 512 * 4 * 4))
-        self.decoder.append(nn.Unflatten(1, (512, 4, 4)))
+        self.decoder.append(nn.Linear(self.latent_dim, 256 * 4 * 4))
+        self.decoder.append(nn.Unflatten(1, (256, 4, 4)))
 
-        self.decoder.append(nn.ConvTranspose2d(512, 256, 4, 2, 1))
         self.decoder.append(nn.ConvTranspose2d(256, 128, 4, 2, 1))
         self.decoder.append(nn.ConvTranspose2d(128, 64, 4, 2, 1))
         self.decoder.append(nn.ConvTranspose2d(64, 32, 4, 2, 1))
-        self.decoder.append(nn.ConvTranspose2d(32, self.image_channels, 4, 2, 1))
+        self.decoder.append(nn.ConvTranspose2d(32, 16, 4, 2, 1))
+        self.decoder.append(nn.ConvTranspose2d(16, self.image_channels, 4, 2, 1))
+        self.decoder.append(nn.Sigmoid())
 
     def encode(self, x: torch.Tensor):
         for layer in self.encoder:

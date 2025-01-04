@@ -11,7 +11,7 @@ from training.losses.vae_loss import VAELoss
 from config.vae_config import VAEConfig
 from net.vae.model import VAE
 
-BATCH_SIZE = 16
+BATCH_SIZE = 32
 LATENT_DIM = 100
 IMAGE_CHANNELS = 1
 LEARNING_RATE = 1e-4
@@ -26,28 +26,11 @@ def train(train_dataset: Dataset):
     vae_optimizer = Adam(vae.parameters(), lr=LEARNING_RATE)
     vae_loss = VAELoss(vae_optimizer)
 
-    training_config = VAETrainingConfig(epochs=256, batch_size=BATCH_SIZE, log_interval=100, save_interval=5, num_workers=4)
+    training_config = VAETrainingConfig(epochs=2048, batch_size=BATCH_SIZE, log_interval=100, save_interval=100, num_workers=4)
     trainer = VAETraining(vae, vae_loss, training_config)
+    # trainer.load_model('saved_models/1734894281_95/model.pth', 'saved_models/1734894281_95/optimizer.pth')
     trainer.train(train_dataset)
 
-
-def check(train_dataset: Dataset):
-    vae_config = VAEConfig(latent_dim=LATENT_DIM, image_channels=IMAGE_CHANNELS)
-    vae = VAE(vae_config)
-    vae.load_state_dict(torch.load('./saved_models/vae_epoch_30.pth'))
-    vae.eval()
-
-    data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True)
-    batch = next(iter(data_loader))
-
-    x = batch[0]
-    print(x.shape)
-    x_hat, mean, log_var = vae(x)
-
-    fig, ax = plt.subplots(1, 2)
-    ax[0].imshow(x[0].squeeze().detach().numpy(), cmap='gray')
-    ax[1].imshow(x_hat[0].squeeze().detach().numpy(), cmap='gray')
-    plt.show()
 
 if __name__ == "__main__":
     transform_celeba = transforms.Compose([
@@ -58,6 +41,8 @@ if __name__ == "__main__":
     ])
 
     train_dataset = torchvision.datasets.ImageFolder(DATASET_PATH, transform=transform_celeba)
+    # Config dataset to get only the first 1000 images
+    train_dataset.samples = train_dataset.samples[:1000]
+    train_dataset.imgs = train_dataset.imgs[:1000]
 
     train(train_dataset)
-    # check(train_dataset)

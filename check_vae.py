@@ -20,15 +20,18 @@ DATASET_PATH = './dataset/terrain/scaled'
 def check(train_dataset: Dataset):
     vae_config = VAEConfig(latent_dim=LATENT_DIM, image_channels=IMAGE_CHANNELS)
     vae = VAE(vae_config)
-    vae.load_state_dict(torch.load('./saved_models/vae_epoch_180.pth'))
+    vae.load_state_dict(torch.load('saved_models/1736007219_1900/model.pth'))
     vae.eval()
 
     data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True)
     batch = next(iter(data_loader))
 
-    x = batch[0]
+    x = batch[0] / 2 + 0.5
     print(x.shape)
+    print(x.min(), x.max())
     x_hat, mean, log_var = vae(x)
+    print(x_hat.shape)
+    print(x_hat.min(), x_hat.max())
 
     fig, ax = plt.subplots(1, 2)
     ax[0].imshow(x[0].squeeze().detach().numpy(), cmap='gray')
