@@ -1,8 +1,10 @@
+import torch.nn.functional as F
 import torch.nn as nn
 import torch
 
 from config.vae_config import VAEConfig
 from net.modules.vae.encoder_blocks import VAEEncoderBlock
+from net.modules.vae.decoder_blocks import VAEDecoderBlock
 
 
 class VAE(nn.Module):
@@ -21,25 +23,27 @@ class VAE(nn.Module):
         self.init_layers()
 
     def init_layers(self):
-        self.encoder.append(VAEEncoderBlock(self.image_channels, 16, 4, 2, 1))
-        self.encoder.append(VAEEncoderBlock(16, 32, 4, 2, 1))
-        self.encoder.append(VAEEncoderBlock(32, 64, 4, 2, 1))
-        self.encoder.append(VAEEncoderBlock(64, 128, 4, 2, 1))
-        self.encoder.append(VAEEncoderBlock(128, 256, 4, 2, 1))
+        self.encoder.append(nn.Conv2d(self.image_channels, 32, 7, 1, 3))
+        self.encoder.append(nn.LeakyReLU(0.2))
+        self.encoder.append(VAEEncoderBlock(32, 64, 3))
+        self.encoder.append(VAEEncoderBlock(64, 128, 3))
+        self.encoder.append(VAEEncoderBlock(128, 256, 3))
+        self.encoder.append(VAEEncoderBlock(256, 512, 3))
+
         self.encoder.append(nn.Flatten())
 
-        self.mean_layer = nn.Linear(256 * 4 * 4, self.latent_dim)
-        self.logvar_layer = nn.Linear(256 * 4 * 4, self.latent_dim)
+        self.mean_layer = nn.Linear(512 * 8 * 8, self.latent_dim)
+        self.logvar_layer = nn.Linear(512 * 8 * 8, self.latent_dim)
 
-        self.decoder.append(nn.Linear(self.latent_dim, 256 * 4 * 4))
-        self.decoder.append(nn.Unflatten(1, (256, 4, 4)))
+        self.decoder.append(nn.Linear(self.latent_dim, 512 * 8 * 8))
 
-        self.decoder.append(nn.ConvTranspose2d(256, 128, 4, 2, 1))
-        self.decoder.append(nn.ConvTranspose2d(128, 64, 4, 2, 1))
-        self.decoder.append(nn.ConvTranspose2d(64, 32, 4, 2, 1))
-        self.decoder.append(nn.ConvTranspose2d(32, 16, 4, 2, 1))
-        self.decoder.append(nn.ConvTranspose2d(16, self.image_channels, 4, 2, 1))
-        self.decoder.append(nn.Sigmoid())
+        self.decoder.append(nn.Unflatten(1, (512, 8, 8)))
+        self.decoder.append(VAEDecoderBlock(512, 256, 3))
+        self.decoder.append(VAEDecoderBlock(256, 128, 3))
+        self.decoder.append(VAEDecoderBlock(128, 64, 3))
+        self.decoder.append(VAEDecoderBlock(64, 32, 3))
+        self.decoder.append(nn.Conv2d(32, self.image_channels, 7, 1, 3))
+        self.decoder.append(nn.Tanh())
 
     def encode(self, x: torch.Tensor):
         for layer in self.encoder:

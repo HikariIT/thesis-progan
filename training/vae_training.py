@@ -27,16 +27,15 @@ class VAETraining:
 
     def train(self, dataset):
         data_loader = DataLoader(dataset, batch_size=self.config.batch_size, num_workers=self.config.num_workers, pin_memory=self.config.pin_memory)
+        test_img = next(iter(data_loader))[0]
+
         for epoch in range(self.start_epoch, self.config.epochs):
             self.vae.train()
             progress_bar = tqdm(data_loader, desc=f"Epoch {epoch + 1}/{self.config.epochs}")
             for batch_idx, (data, _) in enumerate(progress_bar):
                 data = data.to(self.device)
-                data = data / 2 + 0.5
+                # data = data / 2 + 0.5
                 loss, reproduction_loss, kl_divergence_loss = self.vae_loss(self.vae, data)
-
-                if batch_idx % self.config.log_interval == 0:
-                    self.writer.add_scalar('Loss/train', loss.item(), epoch * len(data_loader) + batch_idx)
 
                 progress_bar.set_postfix({
                     'loss': loss.item(),
@@ -46,6 +45,17 @@ class VAETraining:
 
             if (epoch + 1) % self.config.save_interval == 0:
                 self.save_model(epoch + 1)
+
+            if (epoch + 1) % self.config.log_interval == 0:
+                self.writer.add_scalar('Loss/train', loss.item(), epoch + 1)
+                self.writer.add_scalar('Reconstruction/train', reproduction_loss.item(), epoch + 1)
+                self.writer.add_scalar('KL Divergence/train', kl_divergence_loss.item(), epoch + 1)
+
+            if (epoch + 1) % self.config.image_interval == 0:
+                test_img = test_img.to(self.device)
+                result_img = self.vae(test_img)[0]
+                grid = torch.cat([test_img, result_img], 0)
+                self.writer.add_images('ReconstructionImage/train', grid, epoch + 1)
 
     def save_model(self, epoch):
         dir_path = os.path.join(self.config.save_dir, f"{self.id}_{epoch}")

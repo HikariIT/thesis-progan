@@ -20,10 +20,10 @@ DATASET_PATH = './dataset/terrain/scaled'
 def check(train_dataset: Dataset):
     vae_config = VAEConfig(latent_dim=LATENT_DIM, image_channels=IMAGE_CHANNELS)
     vae = VAE(vae_config)
-    vae.load_state_dict(torch.load('saved_models/1736007219_1900/model.pth'))
+    vae.load_state_dict(torch.load('saved_models/1736013324_100/model.pth'))
     vae.eval()
 
-    data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1, shuffle=True)
+    data_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1)
     batch = next(iter(data_loader))
 
     x = batch[0] / 2 + 0.5

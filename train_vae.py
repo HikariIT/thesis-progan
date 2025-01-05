@@ -11,7 +11,7 @@ from training.losses.vae_loss import VAELoss
 from config.vae_config import VAEConfig
 from net.vae.model import VAE
 
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 LATENT_DIM = 100
 IMAGE_CHANNELS = 1
 LEARNING_RATE = 1e-4
@@ -26,7 +26,7 @@ def train(train_dataset: Dataset):
     vae_optimizer = Adam(vae.parameters(), lr=LEARNING_RATE)
     vae_loss = VAELoss(vae_optimizer)
 
-    training_config = VAETrainingConfig(epochs=2048, batch_size=BATCH_SIZE, log_interval=100, save_interval=100, num_workers=4)
+    training_config = VAETrainingConfig(epochs=1024, batch_size=BATCH_SIZE, log_interval=1, image_interval=10, save_interval=50, num_workers=4)
     trainer = VAETraining(vae, vae_loss, training_config)
     # trainer.load_model('saved_models/1734894281_95/model.pth', 'saved_models/1734894281_95/optimizer.pth')
     trainer.train(train_dataset)
@@ -41,7 +41,6 @@ if __name__ == "__main__":
     ])
 
     train_dataset = torchvision.datasets.ImageFolder(DATASET_PATH, transform=transform_celeba)
-    # Config dataset to get only the first 1000 images
     train_dataset.samples = train_dataset.samples[:1000]
     train_dataset.imgs = train_dataset.imgs[:1000]
 
