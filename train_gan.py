@@ -1,14 +1,14 @@
-import torch
 import torchvision
+import torch
 
-from config.gan_config import GANConfig
-from config.gan_loss_config import GANLossConfig
+from training.losses.wgan_gp_loss import DiscriminatorLoss, GeneratorLoss, WGANGPLoss
 from config.gan_training_config import GANTrainingConfig
+from config.gan_loss_config import GANLossConfig
+from training.gan_training import GANTraining
+from config.gan_config import GANConfig
 from torchvision import transforms
 from torch.optim.adam import Adam
 from net.gan.model import ProGAN
-from training.gan_training import GANTraining
-from training.losses.wgan_gp_loss import DiscriminatorLoss, GeneratorLoss, WGANGPLoss
 
 DATASET_PATH = './dataset/terrain/scaled'
 LEARNING_RATE = 1e-3
@@ -33,8 +33,8 @@ if __name__ =="__main__":
     generator.to(device)
     discriminator.to(device)
 
-    discriminator_optimizer = Adam(discriminator.parameters(), lr=LEARNING_RATE, betas=(0, 0.99))
-    generator_optimizer = Adam(generator.parameters(), lr=LEARNING_RATE, betas=(0, 0.99))
+    discriminator_optimizer = Adam(discriminator.parameters(), lr=3e-4, betas=(0, 0.99))
+    generator_optimizer = Adam(generator.parameters(), lr=1e-3, betas=(0, 0.99))
 
     loss_config = GANLossConfig(LAMBDA_GP)
     wgan_gp_loss = WGANGPLoss(discriminator_optimizer, generator_optimizer, loss_config)
@@ -43,5 +43,6 @@ if __name__ =="__main__":
 
     training_config = GANTrainingConfig(save_interval=1000, img_generation_interval=1000, checkpoint_images=32, num_workers=4)
     trainer = GANTraining(generator, discriminator, generator_loss, discriminator_loss, train_dataset, training_config)
-    trainer.load_model('saved_models/1734979579_depth_4_iteration_201000.pth')
     trainer.train()
+
+# File for GAN training

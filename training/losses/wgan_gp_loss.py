@@ -6,8 +6,6 @@ from net.gan.discriminator import Discriminator
 
 
 class WGANGPLoss:
-    # Wasserstein GAN with Gradient Penalty Loss
-
     def __init__(self, discriminator_optimizer: Optimizer, generator_optimizer: Optimizer, gan_loss_config: GANLossConfig):
         self.discriminator_optimizer = discriminator_optimizer
         self.generator_optimizer = generator_optimizer
@@ -38,11 +36,11 @@ class DiscriminatorLoss:
         self.wgan_gp_loss = wgan_gp_loss
 
     def __call__(self, discriminator: Discriminator, real_img: torch.Tensor, fake_img: torch.Tensor, alpha: float):
-        real_probability = discriminator(real_img, alpha).view(-1)
-        fake_probability = discriminator(fake_img, alpha).view(-1)
+        real_critic = discriminator(real_img, alpha).view(-1)
+        fake_critic = discriminator(fake_img, alpha).view(-1)
 
         gp_loss = self.wgan_gp_loss.gradient_penalty(discriminator, real_img, fake_img, alpha)
-        discriminator_loss = torch.mean(fake_probability) - torch.mean(real_probability) + gp_loss
+        discriminator_loss = torch.mean(fake_critic) - torch.mean(real_critic) + gp_loss
 
         self.wgan_gp_loss.discriminator_optimizer.zero_grad()
         discriminator_loss.backward(retain_graph=True)

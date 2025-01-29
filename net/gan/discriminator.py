@@ -48,39 +48,21 @@ class Discriminator(nn.Module):
         return list(self.initial_layers) + list(self.middle_layers) + [self.final_layer]
 
     def forward(self, x: torch.Tensor, alpha: float = 1) -> torch.Tensor:
-        total_len = 0
         if self.current_depth != 0:
             old_res = nn.functional.avg_pool2d(x, 2)
             old_res = self.initial_layers[self.current_depth - 1](old_res)
 
             new_res = self.initial_layers[self.current_depth](x)
-            print(f"X shape after initial block {self.current_depth}: ", new_res.shape)
-            print(sum(p.numel() for p in self.initial_layers[self.current_depth].parameters()))
-            total_len += sum(p.numel() for p in self.initial_layers[self.current_depth].parameters())
-
             new_res = self.middle_layers[self.current_depth - 1](new_res)
-            print(f"X shape after middle block {self.current_depth - 1}: ", new_res.shape)
-            print(sum(p.numel() for p in self.middle_layers[self.current_depth - 1].parameters()))
-            total_len += sum(p.numel() for p in self.middle_layers[self.current_depth - 1].parameters())
 
             x = alpha * new_res + (1 - alpha) * old_res
 
             for i in reversed(range(self.current_depth - 1)):
                 x = self.middle_layers[i](x)
-                print(f"X shape after middle block {i}: ", x.shape)
-                print(sum(p.numel() for p in self.middle_layers[i].parameters()))
-                total_len += sum(p.numel() for p in self.middle_layers[i].parameters())
         else:
             x = self.initial_layers[self.current_depth](x)
-            print(f"X shape after initial block {self.current_depth}: ", x.shape)
-            print(sum(p.numel() for p in self.initial_layers[self.current_depth].parameters()))
-            total_len += sum(p.numel() for p in self.initial_layers[self.current_depth].parameters())
 
         x = self.final_layer(x)
-        print(f"X shape after final block: ", x.shape)
-        print(sum(p.numel() for p in self.final_layer.parameters()))
-        total_len += sum(p.numel() for p in self.final_layer.parameters())
-        print(total_len)
         return x
 
     def device(self):

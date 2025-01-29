@@ -47,39 +47,20 @@ class Generator(nn.Module):
 
     def forward(self, x: torch.Tensor, alpha: float = 1) -> torch.Tensor:
         x = self.initial_layer(x)
-        total_len = 0
 
-        print("X shape: ", x.shape)
-        print(sum(p.numel() for p in self.initial_layer.parameters()))
-        total_len += sum(p.numel() for p in self.initial_layer.parameters())
         if self.current_depth != 0:
             for i in range(self.current_depth - 1):
                 x = self.middle_blocks[i](x)
-                print(f"X shape after middle block {i}: ", x.shape)
-                print(sum(p.numel() for p in self.middle_blocks[i].parameters()))
-                total_len += sum(p.numel() for p in self.middle_blocks[i].parameters())
-
 
             residual = self.final_blocks[self.current_depth - 1](x)
             x = self.middle_blocks[self.current_depth - 1](x)
 
-            print(f"X shape after middle block {self.current_depth - 1}: ", x.shape)
-            print(sum(p.numel() for p in self.middle_blocks[self.current_depth - 1].parameters()))
-            total_len += sum(p.numel() for p in self.middle_blocks[self.current_depth - 1].parameters())
-
             new_res = self.final_blocks[self.current_depth](x)
             old_res = nn.functional.interpolate(residual, scale_factor=2)
-            print(f"X shape after final block {self.current_depth}: ", new_res.shape)
-            print(sum(p.numel() for p in self.final_blocks[self.current_depth].parameters()))
-            total_len += sum(p.numel() for p in self.final_blocks[self.current_depth].parameters())
-            print(sum(p.numel() for p in self.parameters()))
 
-            print(total_len)
             return nn.functional.tanh(alpha * new_res + (1 - alpha) * old_res)
 
         else:
-            total_len += sum(p.numel() for p in self.final_blocks[0].parameters())
-            print(total_len)
             return nn.functional.tanh(self.final_blocks[0](x))
 
     def device(self):
